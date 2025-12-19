@@ -3,13 +3,15 @@ import { CURRICULUM } from './constants';
 import { CourseLevel, Lesson, Difficulty } from './types';
 import { Button } from './components/Button';
 import { LessonView } from './components/LessonView';
-import { Play, Star, CheckCircle, Key, LogOut } from 'lucide-react';
+import { Play, Star, CheckCircle, Key, LogOut, X } from 'lucide-react';
 import { useApiKey } from './contexts/ApiKeyContext';
 
 const App: React.FC = () => {
   const [selectedLevelId, setSelectedLevelId] = useState<Difficulty | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const { hasKey, setApiKey } = useApiKey();
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [tempKey, setTempKey] = useState('');
   
   // Track completed lessons using localStorage
   const [completedLessons, setCompletedLessons] = useState<string[]>(() => {
@@ -69,16 +71,20 @@ const App: React.FC = () => {
   };
 
   const handleSetKey = () => {
-    const key = window.prompt("請輸入你的 Gemini API Key (我們會將它存在你的瀏覽器中):");
-    if (key !== null) {
-      setApiKey(key.trim());
+    setIsKeyModalOpen(true);
+    setTempKey('');
+  };
+
+  const handleSaveKey = () => {
+    if (tempKey.trim()) {
+      setApiKey(tempKey.trim());
+      setIsKeyModalOpen(false);
     }
   };
 
   const handleClearKey = () => {
-    if (window.confirm("確定要移除 API Key 嗎？")) {
-      setApiKey('');
-    }
+    // Directly clear the key
+    setApiKey('');
   };
 
   return (
@@ -107,11 +113,13 @@ const App: React.FC = () => {
             {hasKey ? (
               <button 
                 onClick={handleClearKey}
-                className="flex items-center gap-2 bg-green-100 hover:bg-red-50 hover:text-red-500 text-green-700 px-3 py-2 rounded-full transition-colors"
-                title="已連接 API Key (點擊移除)"
+                className="flex items-center gap-2 bg-green-100 hover:bg-red-100 hover:text-red-600 text-green-700 px-3 py-2 rounded-full transition-all group"
+                title="點擊以斷開連線"
               >
-                <Key size={18} />
-                <span className="hidden sm:inline font-bold text-sm">已連接</span>
+                <Key size={18} className="group-hover:hidden" />
+                <LogOut size={18} className="hidden group-hover:block" />
+                <span className="hidden sm:inline font-bold text-sm group-hover:hidden">已連線</span>
+                <span className="hidden font-bold text-sm sm:group-hover:inline">斷開連線</span>
               </button>
             ) : (
               <button 
@@ -128,6 +136,60 @@ const App: React.FC = () => {
       </header>
 
       <main className="pt-8">
+        {/* API Key Modal */}
+        {isKeyModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-[scale-in_0.2s_ease-out]">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                  <Key className="text-yellow-500" />
+                  設定 API Key
+                </h3>
+                <button 
+                  onClick={() => setIsKeyModalOpen(false)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-slate-600">
+                  請輸入你的 Gemini API Key 以啟用 AI 助教功能。
+                  <span className="block text-sm text-slate-400 mt-2">
+                    為了安全起見，Key 僅會保存在你的瀏覽器記憶體中，重新整理網頁後需再次輸入。
+                  </span>
+                </p>
+                
+                <input
+                  type="password"
+                  value={tempKey}
+                  onChange={(e) => setTempKey(e.target.value)}
+                  placeholder="貼上你的 API Key..."
+                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 transition-all text-slate-700"
+                  autoFocus
+                />
+                
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setIsKeyModalOpen(false)}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={handleSaveKey}
+                    disabled={!tempKey.trim()}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-yellow-200"
+                  >
+                    確認儲存
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* VIEW: HOME (Level Selection) */}
         {!selectedLevelId && (
           <div className="max-w-6xl mx-auto px-4">
