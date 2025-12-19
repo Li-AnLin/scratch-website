@@ -3,11 +3,13 @@ import { CURRICULUM } from './constants';
 import { CourseLevel, Lesson, Difficulty } from './types';
 import { Button } from './components/Button';
 import { LessonView } from './components/LessonView';
-import { Play, Star, CheckCircle } from 'lucide-react';
+import { Play, Star, CheckCircle, Key, LogOut } from 'lucide-react';
+import { useApiKey } from './contexts/ApiKeyContext';
 
 const App: React.FC = () => {
   const [selectedLevelId, setSelectedLevelId] = useState<Difficulty | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const { hasKey, setApiKey } = useApiKey();
   
   // Track completed lessons using localStorage
   const [completedLessons, setCompletedLessons] = useState<string[]>(() => {
@@ -66,6 +68,19 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSetKey = () => {
+    const key = window.prompt("請輸入你的 Gemini API Key (我們會將它存在你的瀏覽器中):");
+    if (key !== null) {
+      setApiKey(key.trim());
+    }
+  };
+
+  const handleClearKey = () => {
+    if (window.confirm("確定要移除 API Key 嗎？")) {
+      setApiKey('');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-[Fredoka]">
       {/* Header */}
@@ -88,6 +103,26 @@ const App: React.FC = () => {
               <Star className="text-yellow-400 fill-yellow-400" size={20} />
               <span className="font-bold text-slate-700">LV. {playerLevel}</span>
             </div>
+
+            {hasKey ? (
+              <button 
+                onClick={handleClearKey}
+                className="flex items-center gap-2 bg-green-100 hover:bg-red-50 hover:text-red-500 text-green-700 px-3 py-2 rounded-full transition-colors"
+                title="已連接 API Key (點擊移除)"
+              >
+                <Key size={18} />
+                <span className="hidden sm:inline font-bold text-sm">已連接</span>
+              </button>
+            ) : (
+              <button 
+                onClick={handleSetKey}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-yellow-100 hover:text-yellow-700 text-slate-500 px-3 py-2 rounded-full transition-colors"
+                title="設定 API Key"
+              >
+                <Key size={18} />
+                <span className="hidden sm:inline font-bold text-sm">設定 Key</span>
+              </button>
+            )}
           </div>
         </div>
       </header>

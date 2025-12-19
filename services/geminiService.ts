@@ -14,11 +14,9 @@ const SYSTEM_INSTRUCTION = `
 你的目標是幫助他們理解邏輯，而不是幫他們寫作業。
 `;
 
-export const getGeminiResponse = async (history: ChatMessage[], newMessage: string): Promise<string> => {
-  // Use process.env.API_KEY directly as per guidelines
-  const apiKey = process.env.API_KEY;
+export const getGeminiResponse = async (history: ChatMessage[], newMessage: string, apiKey: string): Promise<string> => {
   if (!apiKey) {
-    return "喵？我需要魔法鑰匙 (API Key) 才能說話喔！請確認環境變數設定。 🔑";
+    return "喵？我需要魔法鑰匙 (API Key) 才能說話喔！請點擊右上角的設定按鈕輸入 Key。 🔑";
   }
 
   try {

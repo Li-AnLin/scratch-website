@@ -6,7 +6,7 @@ import { Button } from './Button';
 import { useApiKey } from '../contexts/ApiKeyContext';
 
 export const ChatBot: React.FC = () => {
-  const { hasKey } = useApiKey();
+  const { hasKey, apiKey } = useApiKey();
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'model', text: '你好！我是 Scratch 貓博士 😺。你在寫程式時遇到困難了嗎？還是想要一些酷點子？隨時問我喔！', timestamp: Date.now() }
   ]);
@@ -26,7 +26,7 @@ export const ChatBot: React.FC = () => {
     if (!input.trim() || isLoading) return;
 
     if (!hasKey) {
-        const errorMsg: ChatMessage = { role: 'model', text: '喵！請先設定環境變數 API Key 我才能幫你喔！', timestamp: Date.now() };
+        const errorMsg: ChatMessage = { role: 'model', text: '喵！請先點擊右上角設定 API Key，我才能幫你喔！', timestamp: Date.now() };
         setMessages(prev => [...prev, errorMsg]);
         return;
     }
@@ -36,7 +36,7 @@ export const ChatBot: React.FC = () => {
     setInput('');
     setIsLoading(true);
 
-    const responseText = await getGeminiResponse(messages, input);
+    const responseText = await getGeminiResponse(messages, input, apiKey);
     
     const botMsg: ChatMessage = { role: 'model', text: responseText, timestamp: Date.now() };
     setMessages(prev => [...prev, botMsg]);
